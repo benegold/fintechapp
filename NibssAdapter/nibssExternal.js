@@ -7,13 +7,14 @@ const BASE_URL = "https://nibssbyphoenix.onrender.com";
 // 🔐 1. Get Token
 export const getNibssToken = async () => {
   try {
-    const res = await axios.post(`${BASE_URL}/auth/token`, {
+    const res = await axios.post(`${BASE_URL}api/auth/token`, {
       apiKey: process.env.NIBSS_API_KEY,
       apiSecret: process.env.NIBSS_API_SECRET
     });
 
     return res.data?.access_token;
   } catch (err) {
+    console.error("Token error:",err.response?.data || err.message);
     throw new Error("Failed to authenticate with NIBSS");
   }
 };
@@ -30,11 +31,15 @@ export const createBVN = async (data) => {
 
     await axios.post(`${BASE_URL}/api/insertBvn`, {
       bvn,
-      ...data
+      firstName: data.firstName,
+      lastName: data.lastName,
+      dob: data.dob,
+      phone: data.phone
     });
 
     return bvn;
   } catch (err) {
+    console.error("BVN error:", err.response?.data || err.message);
     throw new Error("BVN creation failed");
   }
 };
@@ -47,7 +52,7 @@ export const createNibssAccount = async ({ bvn, dob }) => {
     const res = await axios.post(
       `${BASE_URL}/api/account/create`,
       {
-        kycType: "BVN",
+        kycType: "bvn",
         kycID: bvn,
         dob
       },
@@ -60,6 +65,7 @@ export const createNibssAccount = async ({ bvn, dob }) => {
 
     return res.data;
   } catch (err) {
+    console.error("NIBSS account error:", err.response?.data || err.message);
     throw new Error("Account creation failed");
   }
 };

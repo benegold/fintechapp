@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
+import dns from "node:dns"
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 import express from 'express';
 import connectDB from './configs/database.js';

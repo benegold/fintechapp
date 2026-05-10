@@ -97,6 +97,7 @@ export const register = async (req, res) => {
       
     });
   } catch (error) {
+    console.error ("FULL ERROR:", error)
     return res.status(500).json({
       status: "error",
       message: error.message
@@ -152,7 +153,7 @@ export const login = async (req, res) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     return res.status(200).json({
       status: "success",
@@ -218,4 +219,4 @@ export const setTransactionPin = async (req, res) => {
       message: error.message
     });
   }
-};
+}; 
