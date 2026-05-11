@@ -43,32 +43,28 @@ export const register = async (req, res) => {
       dob
     });
 
-    //call nibss api to verify BVN and link to user record 
-
-      const bvn = await createBVN({
+    // Call NIBSS API to create BVN
+    const bvn = await createBVN({
       firstName,
       lastName,
       dob,
       phone
     });
 
-    //calls nibss to create account number and link to user record
+    // Call NIBSS API to create account
     const accountResponse = await createNibssAccount({
       bvn,
       dob
     });
 
-    if (!accountResponse || accountResponse.status !== "success") {
+    // Validate account response
+    if (!accountResponse || !accountResponse.accountNumber) {
       throw new Error("Failed to create NIBSS account");
     }
 
-    const accountNumber = accountResponse?.account?.accountNumber;
+    const accountNumber = accountResponse.accountNumber;
 
-    if (!accountNumber) {
-      throw new Error("No account number returned");
-    }
-
-     // 6️⃣ Save BVN record
+    // Save BVN record
     const bvnRecord = await Bvn.create({
       user: user._id,
       bvn,
@@ -80,7 +76,7 @@ export const register = async (req, res) => {
       rawResponse: null
     });
 
-    // 7️⃣ Save Account record
+    // Save account record
     await Account.create({
       user: user._id,
       bvn: bvnRecord._id,
@@ -89,15 +85,18 @@ export const register = async (req, res) => {
       rawResponse: accountResponse
     });
 
-
     return res.status(201).json({
       status: "success",
       message: "User created successfully",
-      data: { bvn, accountNumber }
-      
+      data: {
+        bvn,
+        accountNumber
+      }
     });
+
   } catch (error) {
-    console.error ("FULL ERROR:", error)
+    console.error("FULL ERROR:", error);
+
     return res.status(500).json({
       status: "error",
       message: error.message
@@ -129,13 +128,13 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare passwords
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       user.failedLoginAttempts += 1;
 
-      // Lock after 5 attempts
+      // Lock account after 5 failed attempts
       if (user.failedLoginAttempts >= 5) {
         user.isLocked = true;
       }
@@ -193,6 +192,7 @@ export const setTransactionPin = async (req, res) => {
   try {
     const { pin } = req.body;
 
+    // Validate PIN
     if (!/^\d{4}$/.test(pin)) {
       return res.status(400).json({
         status: "error",
@@ -200,9 +200,11 @@ export const setTransactionPin = async (req, res) => {
       });
     }
 
+    // Hash PIN
     const hashedPin = await bcrypt.hash(pin, 10);
 
-    const user = await User.findByIdAndUpdate(
+    // Save PIN
+    await User.findByIdAndUpdate(
       req.user.id,
       { transactionPin: hashedPin },
       { new: true }
@@ -219,4 +221,4 @@ export const setTransactionPin = async (req, res) => {
       message: error.message
     });
   }
-}; 
+};
