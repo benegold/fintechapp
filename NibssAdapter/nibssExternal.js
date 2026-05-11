@@ -8,23 +8,18 @@ const BASE_URL = "https://nibssbyphoenix.onrender.com";
 // 🔐 1. Get Token
 export const getNibssToken = async () => {
   try {
+    console.log("API KEY:", process.env.NIBSS_API_KEY);
+    console.log("API SECRET:", process.env.NIBSS_API_SECRET);
     const res = await axios.post(`${BASE_URL}/api/auth/token`, {
       apiKey: process.env.NIBSS_API_KEY,
       apiSecret: process.env.NIBSS_API_SECRET
     });
-
     return res.data?.token;
-
   } catch (err) {
-    console.error(
-      "Token error:",
-      err.response?.data || err.message
-    );
-
+    console.error("Token error:", err.response?.data || err.message);
     throw new Error("Failed to authenticate with NIBSS");
   }
 };
-
 
 // 🎲 2. Generate BVN
 export const generateBVN = () => {
@@ -76,8 +71,8 @@ export const createNibssAccount = async ({ bvn, dob }) => {
       `${BASE_URL}/api/account/create`,
       {
         kycType: "bvn",
-        kycID: bvn,
-        dob
+        kycId: bvn,
+        dob: dob
       },
       {
         headers: {
@@ -89,13 +84,10 @@ export const createNibssAccount = async ({ bvn, dob }) => {
     return res.data;
 
   } catch (err) {
-
     console.error(
-      "NIBSS account error:",
-      err.response?.data || err.message
+      console.error("NIBSS ERROR:", err.response?.data || err.message)
     );
-
-    throw new Error("Account creation failed");
+    throw err;
   }
 };
 

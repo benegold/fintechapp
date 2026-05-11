@@ -15,10 +15,7 @@ const userSchema = new mongoose.Schema(
       trim: true
     },
     
-     failedLoginAttempts: {
-      type: Number,
-      default: 0
-    },
+
 
     dob: {
       type: String,
